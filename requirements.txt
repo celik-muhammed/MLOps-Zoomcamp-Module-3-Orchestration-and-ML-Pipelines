@@ -25,7 +25,7 @@ hyperopt==0.2.7
 pyarrow==11.0.0
 fastparquet==2023.4.0
 
-# if new env
+# Optionally
 # jupyter
 # ipykernel
 # ipywidgets

@@ -264,14 +264,4 @@ def main_flow(raw_data_path="./data", dest_path="./models", years="2023", months
     # example_email_send_message_flow(['@gmail.com'])
 
 if __name__ == "__main__":
-    # parser = argparse.ArgumentParser(description="Main Flow")
-    # parser.add_argument("--raw_data_path", default="./data",       help="Location where the raw NYC taxi trip data was saved")
-    # parser.add_argument("--dest_path",     default="./models",     help="Location where the resulting model files will be saved")
-    # parser.add_argument("--years",         default="2023",         help="Years where the raw NYC taxi trip data was saved (space-separated)")
-    # parser.add_argument("--months",        default="1 2 3 4",      help="Months where the raw NYC taxi trip data was saved (space-separated)")
-    # parser.add_argument("--colors",        default="green yellow", help="Colors where the raw NYC taxi trip data was saved")
-
-    # args = parser.parse_args()
-    # main_flow(args.raw_data_path, args.dest_path, args.years, args.months, args.colors)
-
     main_flow()
