@@ -21,19 +21,19 @@ pull:
     access_token:
 
 # the deployments section allows you to provide configuration for deploying flows
-deployments:
-- name:
-  version:
-  tags: []
-  description:
-  schedule: {}
-  flow_name:
-  entrypoint:
-  parameters: {}
-  work_pool:
-    name:
-    work_queue_name:
-    job_variables: {}
+# deployments:
+# - name:
+#   version:
+#   tags: []
+#   description:
+#   schedule: {}
+#   flow_name:
+#   entrypoint:
+#   parameters: {}
+#   work_pool:
+#     name:
+#     work_queue_name:
+#     job_variables: {}
 - name: zoom_mlops_deployment
   version:
   tags: []
@@ -44,7 +44,7 @@ deployments:
     name: zoom_mlops_pool
     work_queue_name:
     job_variables: {}
-  schedule:
-    interval: 120.0
-    anchor_date: '2023-07-03T12:34:47.319003+00:00'
-    timezone: UTC
+  # schedule:
+  #   interval: 120.0
+  #   anchor_date: '2023-07-03T12:34:47.319003+00:00'
+  #   timezone: UTC
