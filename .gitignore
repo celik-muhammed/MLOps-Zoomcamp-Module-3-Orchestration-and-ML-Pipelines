@@ -1,5 +1,5 @@
 # Data artifacts
-**/data/
+# **/data/
 *_v0.ipynb
 *.parquet
 *.html
