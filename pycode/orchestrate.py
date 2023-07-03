@@ -225,7 +225,7 @@ def download_data(raw_data_path: str, years: list, months: list, colors: list):
                 
 
 @flow(name="Main Flow")
-def main_flow(raw_data_path: str, dest_path: str, years: str, months: str, colors: str) -> None:
+def main_flow(raw_data_path="./data", dest_path="./models", years="2023", months="1 2 3 4", colors="green yellow") -> None:
     """The main training pipeline"""
     # MLflow settings
     # Build or Connect Database Offline
@@ -263,12 +263,14 @@ def main_flow(raw_data_path: str, dest_path: str, years: str, months: str, color
     # example_email_send_message_flow(['@gmail.com'])
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Main Flow")
-    parser.add_argument("--raw_data_path", default="./data", help="Location where the raw NYC taxi trip data was saved")
-    parser.add_argument("--dest_path", default="./models", help="Location where the resulting model files will be saved")
-    parser.add_argument("--years", default="2023", help="Years where the raw NYC taxi trip data was saved (space-separated)")
-    parser.add_argument("--months", default="1 2 3 4", help="Months where the raw NYC taxi trip data was saved (space-separated)")
-    parser.add_argument("--colors", default="green yellow", help="Colors where the raw NYC taxi trip data was saved")
+    # parser = argparse.ArgumentParser(description="Main Flow")
+    # parser.add_argument("--raw_data_path", default="./data", help="Location where the raw NYC taxi trip data was saved")
+    # parser.add_argument("--dest_path", default="./models", help="Location where the resulting model files will be saved")
+    # parser.add_argument("--years", default="2023", help="Years where the raw NYC taxi trip data was saved (space-separated)")
+    # parser.add_argument("--months", default="1 2 3 4", help="Months where the raw NYC taxi trip data was saved (space-separated)")
+    # parser.add_argument("--colors", default="green yellow", help="Colors where the raw NYC taxi trip data was saved")
 
-    args = parser.parse_args()
-    main_flow(args.raw_data_path, args.dest_path, args.years, args.months, args.colors)
+    # args = parser.parse_args()
+    # main_flow(args.raw_data_path, args.dest_path, args.years, args.months, args.colors)
+
+    main_flow()
