@@ -1,4 +1,0 @@
-{
-  "Main Flow": "pycode/orchestrate.py:main_flow",
-  "main-flow": "pycode/orchestrate.py:main_flow"
-}

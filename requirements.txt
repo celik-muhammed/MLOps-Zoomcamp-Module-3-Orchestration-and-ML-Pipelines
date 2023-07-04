@@ -15,9 +15,6 @@ prefect==2.10.18
 prefect-email==0.2.2
 prefect-aws==0.3.4
 
-# Optionally
-black==23.3.0          # code style
-
 # ML Model packages
 hyperopt==0.2.7
 
@@ -26,6 +23,9 @@ pyarrow==11.0.0
 fastparquet==2023.4.0
 
 # Optionally
-# jupyter
-# ipykernel
-# ipywidgets
+black==23.3.0          # code style
+
+# Optionally
+jupyter
+ipykernel
+ipywidgets
