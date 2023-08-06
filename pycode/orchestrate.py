@@ -137,6 +137,16 @@ def train_best_model(
     train = xgb.DMatrix(X_train, label=y_train)
     valid = xgb.DMatrix(X_val, label=y_val)
 
+    # MLflow settings
+    # Build or Connect Database Offline
+    mlflow.set_tracking_uri("sqlite:///mlflow.db")
+    # Connect Database Online
+    # mlflow.set_tracking_uri("http://127.0.0.1:5000")
+    
+    # Build or Connect mlflow experiment
+    EXPERIMENT_NAME = "nyc-taxi-experiment"
+    mlflow.set_experiment(EXPERIMENT_NAME)
+
     # before your training code to enable automatic logging of sklearn metrics, params, and models
     # mlflow.xgboost.autolog()
     
@@ -229,13 +239,7 @@ Duration Prediction
 
 @flow(name="Main Flow")
 def main_flow(raw_data_path="./data", dest_path="./models", years="2023", months="1 2 3 4", colors="green yellow") -> None:
-    """The main training pipeline"""
-    # MLflow settings
-    # Build or Connect Database Offline
-    mlflow.set_tracking_uri("sqlite:///mlflow.db")
-    # Build or Connect mlflow experiment
-    mlflow.set_experiment("nyc-taxi-experiment")
-    
+    """The main training pipeline"""    
     # Download data    
     years  = [int(year) for year in years.split()]
     months = [int(month) for month in months.split()]
