@@ -42,21 +42,22 @@ warnings.filterwarnings("ignore", category=UserWarning, message="Setuptools is r
       retries=3, log_prints=True, )
 def fetch_data(raw_data_path: str, year: int, month: int, color: str) -> None:
     """Fetches data from the NYC Taxi dataset and saves it locally"""
-    os.makedirs(raw_data_path, exist_ok=True)  
-
-    # Download the data from the NYC Taxi dataset
-    url      = f'https://d37ci6vzurychx.cloudfront.net/trip-data/{color}_tripdata_{year}-{month:0>2}.parquet'
+    url      = f'https://d37ci6vzurychx.cloudfront.net/trip-data/{color}_tripdata_{year}-{month:0>2}.parquet'    
     filename = os.path.join(raw_data_path, f'{color}_tripdata_{year}-{month:0>2}.parquet')
-    # urllib.request.urlretrieve(url, filename)
-    # os.system(f"wget -q -N -P {raw_data_path} {url}")
+
+    # Create dest_path folder unless it already exists
+    os.makedirs(raw_data_path, exist_ok=True)
     
+    # Download the data from the NYC Taxi dataset
+    # os.system(f"wget -q -N -P {raw_data_path} {url}")
+    # urllib.request.urlretrieve(url, filename)
     response = requests.get(url)
-    with open(filename, "wb") as f:
-        f.write(response.content)
+    with open(filename, "wb") as f_out:
+        f_out.write(response.content)
     return None
 
 
-@flow(name="Subflow Download Data", log_prints=True)
+@flow(name="Download Datas", log_prints=True)
 def download_data(raw_data_path: str, years: list, months: list, colors: list) -> None:
     # Download the data from the NYC Taxi dataset
     for year in years:
@@ -66,7 +67,7 @@ def download_data(raw_data_path: str, years: list, months: list, colors: list) -
     return None
     
     
-@task(name="Read Taxi Data", retries=3, retry_delay_seconds=2, log_prints=None)
+@task(name="Read Data", retries=3, retry_delay_seconds=2, log_prints=None)
 def read_data(filename: str) -> pd.DataFrame:
     """Read data into DataFrame"""
     df = pd.read_parquet(filename)
@@ -75,7 +76,7 @@ def read_data(filename: str) -> pd.DataFrame:
     df.lpep_pickup_datetime  = pd.to_datetime(df.lpep_pickup_datetime)
 
     df["duration"] = df.lpep_dropoff_datetime - df.lpep_pickup_datetime
-    df.duration    = df.duration.apply(lambda td: td.total_seconds() / 60)
+    df["duration"] = df.duration.apply(lambda td: td.total_seconds() / 60)
 
     df = df[(df.duration >= 1) & (df.duration <= 60)]
 
@@ -85,7 +86,7 @@ def read_data(filename: str) -> pd.DataFrame:
     return df
 
 
-@task(name="Preprocess: Add Features Taxi Data", log_prints=True)
+@task(name="Preprocess: Add Features", log_prints=True)
 def preprocess(
     df: pd.DataFrame,dv: DictVectorizer = None, fit_dv: bool = False
 ) -> tuple(
@@ -150,14 +151,14 @@ def train_best_model(
     # before your training code to enable automatic logging of sklearn metrics, params, and models
     # mlflow.xgboost.autolog()
     
-    with mlflow.start_run():
+    with mlflow.start_run(nested=True):
         # Optional: Set some information about Model
         mlflow.set_tag("developer", "muce")
         mlflow.set_tag("algorithm", "Machine Learning")
         mlflow.set_tag("train-data-path", f'{raw_data_path}/green_tripdata_2023-01.parquet')
         mlflow.set_tag("valid-data-path", f'{raw_data_path}/green_tripdata_2023-02.parquet')
         mlflow.set_tag("test-data-path",  f'{raw_data_path}/green_tripdata_2023-03.parquet') 
-
+        
         # Set Model params information
         best_params = {
             "learning_rate": 0.09585355369315604,
@@ -198,11 +199,11 @@ def train_best_model(
             pickle.dump(dv, f_out)
             
         # whole proccess like pickle, saved Model, Optional: Preprocessor or Pipeline
-        mlflow.log_artifact(local_path = local_file, artifact_path="preprocessor")      
+        mlflow.log_artifact(local_path = local_file, artifact_path="preprocessor")        
         
         # print(f"default artifacts URI: '{mlflow.get_artifact_uri()}'")
 
-        # Create markdown artifact with RMSE value
+        # Add markdown artifact with RMSE value
         markdown__rmse_report = f"""
 # RMSE Report
 
@@ -221,7 +222,7 @@ Duration Prediction
             markdown=markdown__rmse_report,
             description="RMSE for Validation Data Report",
         )
-    return None           
+    return None
 
 
 # @flow(name="Email Server Crenditals", log_prints=True)
@@ -235,8 +236,35 @@ Duration Prediction
 #             msg="This proves email_send_message works!",
 #             email_to=email_address,
 #         )
+                
 
-
+# click work on Local but it Gives ERRORS Deploy step
+# @click.command()
+# @click.option(
+#     "--raw_data_path",
+#     default="./data",
+#     help="Location where the raw NYC taxi trip data was saved"
+# )
+# @click.option(
+#     "--dest_path",
+#     default="./models",
+#     help="Location where the resulting model files will be saved"
+# )
+# @click.option(
+#     "--years",
+#     default="2023",
+#     help="Years where the raw NYC taxi trip data was saved (space-separated)"
+# )
+# @click.option(
+#     "--months",
+#     default="1 2 3 4",
+#     help="Months where the raw NYC taxi trip data was saved (space-separated)"
+# )
+# @click.option(
+#     "--colors",
+#     default="green yellow",
+#     help="Colors where the raw NYC taxi trip data was saved"
+# )
 @flow(name="Main Flow")
 def main_flow(raw_data_path="./data", dest_path="./models", years="2023", months="1 2 3 4", colors="green yellow") -> None:
     """The main training pipeline"""    
@@ -246,10 +274,6 @@ def main_flow(raw_data_path="./data", dest_path="./models", years="2023", months
     colors = colors.split()[:1]
     download_data(raw_data_path, years, months, colors)
     # print(sorted(glob(f'{raw_data_path}/*')))
-    
-    # # Download the data from AWS S3 Bucket
-    # s3_bucket_block = S3Bucket.load("s3-bucket-block")
-    # s3_bucket_block.download_folder_to_path(from_folder="data", to_folder="data")
     
     # list parquet files
     # print(sorted(glob(f'{raw_data_path}/green*.parquet')))
@@ -268,9 +292,19 @@ def main_flow(raw_data_path="./data", dest_path="./models", years="2023", months
 
     # Train
     train_best_model(X_train, X_val, y_train, y_val, dv, raw_data_path, dest_path)
-
-    # example_email_send_message_flow(['@gmail.com'])
+    return None   
 
 
 if __name__ == "__main__":
+    # argparse work on Local but it Gives ERRORS Deploy step
+    # parser = argparse.ArgumentParser(description="Main Flow")
+    # parser.add_argument("--raw_data_path", default="./data",       help="Location where the raw NYC taxi trip data was saved")
+    # parser.add_argument("--dest_path",     default="./models",     help="Location where the resulting model files will be saved")
+    # parser.add_argument("--years",         default="2023",         help="Years where the raw NYC taxi trip data was saved (space-separated)")
+    # parser.add_argument("--months",        default="1 2 3 4",      help="Months where the raw NYC taxi trip data was saved (space-separated)")
+    # parser.add_argument("--colors",        default="green yellow", help="Colors where the raw NYC taxi trip data was saved")
+
+    # args = parser.parse_args()
+    # main_flow(args.raw_data_path, args.dest_path, args.years, args.months, args.colors)
+
     main_flow()
